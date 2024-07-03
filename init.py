@@ -13,7 +13,7 @@ newFileStorage = 'Test' #name this for folder output
 if not os.path.exists(f"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}"):
     os.mkdir(newFileStorage)
 os.chdir(f"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}") #moves you into the correct directory so all .txt files are properly stored
-traceInputTemp = r"C:\Users\tyeh\Downloads\Y59F_best_fret_forOrigin.txt" #this is the input file from SPARTAN
+traceInputTemp = r"C:\Users\tyeh\Downloads\WT_AllTraces_all_fret_forOrigin.txt" #this is the input file from SPARTAN
 traceInput = traceInputTemp.replace('\\','/') #just formatting stuff
 outputName = 'test' #this is the output name for all your files
 
@@ -55,7 +55,8 @@ plt.title('Hi')
 plt.xlim((0,30))
 
 
-
 # Display the plot
-plt.savefig(f"{outputName}.jpg")
+figure = plt.gcf() # get current figure
+figure.set_size_inches(20, 6)
+plt.savefig(f"{outputName}.jpg", transparent=True, dpi = 800)
 plt.show()
