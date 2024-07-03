@@ -5,7 +5,6 @@
 
 import pandas as pd
 import numpy as np
-from IPython.display import display
 
 
 ### This function is used for traces that have been previously sorted into dynamic traces.
@@ -75,6 +74,7 @@ def sortTrajectories(traceInput, window_size = 3, skip = False, resolution = 2):
               AvgLMHvalues.iloc[:, i][j] = 2
           else:
               AvgLMHvalues.iloc[:, i][j] = np.nan
+    print("sortTrajectories is complete.")
     return selected_columns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues
 
 #--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#
@@ -123,8 +123,9 @@ def FRETLifetimes(LMHvalues,window = 3, avg =True, resolution = 0.1):
             Lifetimes.append(counter * resolution / window)
         else:
             Lifetimes.append(counter * resolution)
-        print(counter)
+        #print(counter)
         counter = 0
+    print("FRETLifetimes is complete.")
     return Lifetimes
 
 #--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#
@@ -136,9 +137,10 @@ def FRETLifetimes(LMHvalues,window = 3, avg =True, resolution = 0.1):
 
 #{ } Output dwell times of each state.
 
-def LMHDistribution(LMHvalues, LMHnum, LMHOutput):
+def LMHDistribution(LMHvalues, LMHnum, LMHOutput,resolution):
     counter = 0
     counterList = []
+    counterListResolution = []
 
     for i in range(len(LMHvalues.columns)):
         for j in range(len(LMHvalues)):
@@ -146,16 +148,17 @@ def LMHDistribution(LMHvalues, LMHnum, LMHOutput):
                 counter += 1
             elif counter != 0:
                 counterList.append(counter)
+                counterListResolution.append(counter*resolution)
                 counter = 0  # Reset counter only when encountering a different value
 
     # Append the last counter value if it's not zero after the loops
     if counter != 0:
         counterList.append(counter)
-
+        counterListResolution.append(counter * resolution)
     with open(LMHOutput, 'w') as file:
         file.write(str(counterList))
-
-    return counterList
+    print("LMHDistribution is complete.")
+    return counterList, counterListResolution
 
 #--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#
 #--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#
@@ -209,6 +212,7 @@ def countTransitions(transitions, outputName):
         allTransitions.append(col)
     allTransitionsCompiledDF = pd.DataFrame(allTransitions, columns=['LoMid', 'MidHi', 'LoHi', 'HiMid', 'HiLo', 'MidLo'])
     allTransitionsCompiledDF.to_csv(outputName, sep='\t')
+    print("countTransitions is complete.")
     return allTransitionsCompiledDF
 
 # def countTransitionsValidWindow(transitions, outputName):
@@ -361,11 +365,11 @@ def completeTransitions(transitions):
                 two_state = not two_state
                 zero_state = not zero_state
                 continue
-
+    print("completeTransitions is complete.")
     return complete_transitions_count, jump_transitions_count, occlusions_before_transition
 
 def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes):
-    with open("OcclusionStatsY59F_new.txt", "a") as f:
+    with open(nameOfFile+"_transitionsStats.txt", "a") as f:
         print("Complete:", completeOcclusions, file=f)
         print("Jump:", jumps, file=f)
         print("Occ Per Complete:", unproductiveOcclusions, file=f)
