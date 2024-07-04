@@ -308,6 +308,7 @@ def completeTransitions(transitions):
     jump_transitions_count = [0] * len(transitions.columns)
 
     # Updated part: List of lists to hold occlusions before each complete transition
+    occlusions_before_transition_total= [[] for _ in transitions.columns]
     occlusions_before_transition = [[] for _ in transitions.columns]
     occlusionsFromZeroState = [[] for _ in transitions.columns]
     occlusionsFromTwoState = [[] for _ in transitions.columns]
@@ -322,6 +323,7 @@ def completeTransitions(transitions):
         # Reset occlusion counter for each column
         occlusionsFromZero = 0
         occlusionFromTwo = 0
+        occlusions = 0
         for p in range(0, len(transitions) - 1):  # Adjusted range to avoid index out of range
             window = transitions.iloc[p:p+2, i].tolist()
 
@@ -341,9 +343,11 @@ def completeTransitions(transitions):
                 jump_transitions_count[i] += 1
 
                 # When a jump window occurs, we reset the occlusion count
-                occlusions_before_transition[i].append(occlusionFromTwo+occlusionsFromZero)
+                occlusions_before_transition_total[i].append(occlusionFromTwo + occlusionsFromZero)
+                occlusions_before_transition[i].append(occlusions)
                 occlusionsFromZeroState[i].append(occlusionsFromZero)
                 occlusionsFromTwoState[i].append(occlusionFromTwo)
+                occlusions = 0
                 occlusionsFromZero = 0
                 occlusionFromTwo = 0
 
@@ -355,7 +359,8 @@ def completeTransitions(transitions):
                     two_state = False
 
                 continue
-
+            if (two_state and window in two_occlusions or zero_state and window in zero_occlusions):
+                occlusions += 1
             if two_state and window in two_occlusions:
                 occlusionFromTwo += 1
             if zero_state and window in zero_occlusions:
@@ -365,9 +370,11 @@ def completeTransitions(transitions):
             # Complete transition logic
             if (two_state and window == [1, 0]) or (zero_state and window == [1, 2]):
                 complete_transitions_count[i] += 1
-                occlusions_before_transition[i].append(occlusionFromTwo + occlusionsFromZero)
+                occlusions_before_transition_total[i].append(occlusionFromTwo + occlusionsFromZero)
+                occlusions_before_transition[i].append(occlusions)
                 occlusionsFromZeroState[i].append(occlusionsFromZero)
                 occlusionsFromTwoState[i].append(occlusionFromTwo)
+                occlusions = 0
                 occlusionsFromZero = 0
                 occlusionFromTwo = 0
 
@@ -375,29 +382,47 @@ def completeTransitions(transitions):
                 zero_state = not zero_state
                 continue
     print("completeTransitions is complete.")
-    return complete_transitions_count, jump_transitions_count, occlusions_before_transition, occlusionsFromZeroState, occlusionsFromTwoState
+    return complete_transitions_count, jump_transitions_count, occlusions_before_transition, occlusions_before_transition_total, occlusionsFromZeroState, occlusionsFromTwoState
 
-def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes, occlusionsFromZeroState, occlusionsFromTwoState):
+def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiveOcclusions,occlusions_before_transition_total , TotalTimes, occlusionsFromZeroState, occlusionsFromTwoState):
     with open(nameOfFile+"_transitionsStats.txt", "a") as f:
         print("Complete:", completeOcclusions, file=f)
         print("Jump:", jumps, file=f)
         print("Occ Per Complete:", unproductiveOcclusions, file=f)
         print("Total Time:", TotalTimes, file=f)
         totalOcc = 0
+        totalOcc2 = 0
+        totalZeroState = 0
+        totalTwoState = 0
         totalJump = 0
         totalComplete = 0
         for ele in range(0, len(jumps)):
             totalComplete = totalComplete + completeOcclusions[ele]
         for ele in range(0, len(jumps)):
             totalJump = totalJump + jumps[ele]
+
         for ele in range(0, len(unproductiveOcclusions)):
             for ele2 in range(0, len(unproductiveOcclusions[ele])):
                 totalOcc = totalOcc + unproductiveOcclusions[ele][ele2]
+
+        for ele in range(0, len(occlusionsFromZeroState)):
+            for ele2 in range(0, len(occlusionsFromZeroState[ele])):
+                totalZeroState = totalZeroState + occlusionsFromZeroState[ele][ele2]
+
+        for ele in range(0, len(occlusionsFromTwoState)):
+            for ele2 in range(0, len(occlusionsFromTwoState[ele])):
+                totalTwoState = totalTwoState + occlusionsFromTwoState[ele][ele2]
+
+
+        for ele in range(0, len(occlusions_before_transition_total)):
+            for ele2 in range(0, len(occlusions_before_transition_total[ele])):
+                totalOcc2 = totalOcc2 + occlusions_before_transition_total[ele][ele2]
         print("Jump:", totalJump, file=f)
         print("Jump+Occ:", totalJump + totalOcc, file=f)
         print("Total Unproductive Occ: ", totalOcc, file=f)
+        print("Total Unproductive Occ from Sum: ", totalOcc2, file=f)
         print("Total Productive occ: ", totalComplete, file=f)
         print("Total Productive/sec: ", totalComplete / TotalTimes, file=f)
         print("Ratio of Productive to Unproductive; ", totalComplete / totalOcc, file=f)
-        print("Unproductive Occlusion from Zero State: ", occlusionsFromZeroState)
-        print("Unproductive Occlusion from Two State: ", occlusionsFromTwoState)
+        print("Unproductive Occlusion from Zero State: ", totalZeroState)
+        print("Unproductive Occlusion from Two State: ", totalTwoState)

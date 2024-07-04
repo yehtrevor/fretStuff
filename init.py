@@ -10,35 +10,36 @@ import tkinter as tk
 from tkinter import filedialog
 
 
-newFileStorage = '/' + 'Test' #name this for folder output
-
+newFileStorage = 'Test' #name this for folder output
+outputName = 'test' #this is the output name for all your files
 #Edit me!#
-startDir = filedialog.askdirectory(initialdir="C:/Users/trevo/PycharmProjects/fretStuff/Data")
+startDir = filedialog.askdirectory(initialdir="C:/Users/trevo/PycharmProjects/fretStuff")
 root = tk.Tk()
 root.withdraw()
-traceInputTemp = filedialog.askopenfilenames().replace('\\','/')
-traceInput = traceInputTemp[0]
+traceInputTemp = filedialog.askopenfilenames()
+traceInput = traceInputTemp[0].replace('\\','/')
 
 
-if not os.path.exists(startDir + newFileStorage):
-    os.mkdir(newFileStorage)
-os.chdir(startDir + newFileStorage) #moves you into the correct directory so all .txt files are properly stored
-traceInput = traceInputTemp.replace('\\','/') #just formatting stuff
-outputName = 'test' #this is the output name for all your files
+if not os.path.exists(startDir +'/' + newFileStorage):
+    os.mkdir(startDir +'/' + newFileStorage)
+
+os.chdir(startDir +'/' +newFileStorage+'/') #moves you into the correct directory so all .txt files are properly stored
+print(os.getcwd())
+
 
 #Edit me!#
 
 
-# AllColumns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues = sortTrajectories(traceInput, window_size = 3, skip = False, resolution=2)
+AllColumns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues = sortTrajectories(traceInput, window_size = 3, skip = False, resolution=2)
 # # lo_LMH, lo_LMH_res = LMHDistribution(AvgLMHvalues, 0,f'lo_{outputName}.txt',resolution=0.150)
 # # mid_LMH,mid_LMH_res = LMHDistribution(AvgLMHvalues, 1,f'mid_{outputName}.txt',resolution=0.150)
 # # hi_LMH, hi_LMH_res = LMHDistribution(AvgLMHvalues, 2,f'hi_{outputName}.txt',resolution=0.150)
 # # countTransitions(AvgLMHvalues,f'transitions_{outputName}.txt')
 # # AvgFRETvalues.to_csv(f'FRETvalues_{outputName}.txt', sep='\t')
 # # AvgLMHvalues.to_csv(f'LMHvalues_{outputName}.txt', sep='\t')
-# TotalTimes = sum(FRETLifetimes(LMHvalues))
-# completeOcclusions, jumps, unproductiveOcclusions, OccFromZero, OccFromTwo=completeTransitions(AvgLMHvalues)
-# outputCompleteTransitions(outputName, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes, OccFromZero, OccFromTwo)
+TotalTimes = sum(FRETLifetimes(LMHvalues))
+completeOcclusions, jumps, unproductiveOcclusions,unproductiveOcclusionsTotal, OccFromZero, OccFromTwo=completeTransitions(AvgLMHvalues)
+outputCompleteTransitions(outputName, completeOcclusions, jumps, unproductiveOcclusions, unproductiveOcclusionsTotal, TotalTimes, OccFromZero, OccFromTwo)
 #
 #
 # # binwidth = 1
