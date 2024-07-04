@@ -1,0 +1,314 @@
+Index: fretFunctions.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#FUNCTIONS FOR ANALYSIS#\r\n########################\r\n########################\r\n########################\r\n\r\nimport pandas as pd\r\nimport numpy as np\r\n\r\n\r\n### This function is used for traces that have been previously sorted into dynamic traces.\r\ndef sortTrajectories(traceInput, window_size = 3, skip = False, resolution = 2):\r\n    #read in FRET by each frame; skip allows you to analyze\r\n    if skip == True:\r\n      df = pd.read_csv(traceInput, delimiter='\\t', index_col=False, skiprows=lambda x: x % resolution != 0)\r\n    else:\r\n      df = pd.read_csv(traceInput, delimiter='\\t', index_col=False)\r\n\r\n    selected_columns = df.iloc[:, 1::4]\r\n\r\n    #make array that is the same dimesntions as selected_columns\r\n    dimensions = selected_columns.shape\r\n\r\n    LMHvalues = pd.DataFrame(0,index=np.arange(dimensions[0]),columns=np.arange(dimensions[1]))\r\n\r\n    FRETvalues = selected_columns.iloc[:,]\r\n\r\n#range 1 - lo 0-0.35, mid 0.35-0.45, hi 0.45-1\r\n#range 2 - lo 0-0.35, mid 0.35-0.55, hi 0.55-1\r\n#range 3 - lo 0-0.3, mid 0.3-0.55, hi 0.55-1\r\n#range 4 - lo 0-0.3, mid 0.3-0.45, hi 0.45-1\r\n#range 5 - lo 0-0.35, mid 0.35-0.55, hi 0.55-1\r\n#range 6 - lo 0-0.4, mid 0.4-0.55, hi 0.55-1\r\n    for i in range(len(FRETvalues.columns)):\r\n        for j in range(len(FRETvalues)):\r\n            if 0 < FRETvalues.iloc[:, i][j] <= 0.4:\r\n                LMHvalues.iloc[:, i][j] = 0\r\n            elif 0.4 < FRETvalues.iloc[:, i][j] <= 0.55:\r\n                LMHvalues.iloc[:, i][j] = 1\r\n            elif 0.55 < FRETvalues.iloc[:, i][j] <= 1:\r\n                LMHvalues.iloc[:, i][j] = 2\r\n            else:\r\n                LMHvalues.iloc[:, i][j] = np.nan\r\n    #for i in range(len(LMHvalues.columns)):\r\n    #    for j in range(len(LMHvalues)-1):\r\n    #        if LMHvalues.iloc[j, i] == LMHvalues.iloc[j + 1, i]:\r\n    #            LMHvalues.iloc[j, i] = np.nan\r\n    #        else:\r\n    #            break\r\n    #\r\n    #        if LMHvalues.iloc[-j, i] == LMHvalues.iloc[-j-1 , i]:\r\n    #            LMHvalues.iloc[-j, i] = np.nan\r\n    #        else:\r\n    #            break\r\n\r\n    AvgLMHvalues = pd.DataFrame(0,index=np.arange(dimensions[0]),columns=np.arange(dimensions[1]))\r\n    AvgFRETvalues = pd.DataFrame(index=FRETvalues.index)\r\n\r\n    #Boxcar average with window size of 3 to average FRET data. This is to remove events that may bounce back and forth bewtween states.\r\n\r\n    for column in FRETvalues.columns:\r\n        AvgFRETvalues[column] = FRETvalues[column].copy()  # Copy the column to avoid modifying the original data\r\n        for i in range(1, window_size):\r\n            AvgFRETvalues[column] += FRETvalues[column].shift(i)\r\n        AvgFRETvalues[column] /= window_size\r\n\r\n\r\n    for i in range(len(AvgFRETvalues.columns)):\r\n      for j in range(len(AvgFRETvalues)):\r\n          if 0 < AvgFRETvalues.iloc[:, i][j] <= 0.4:\r\n              AvgLMHvalues.iloc[:, i][j] = 0\r\n          elif 0.4 < AvgFRETvalues.iloc[:, i][j] <= 0.55:\r\n              AvgLMHvalues.iloc[:, i][j] = 1\r\n          elif 0.55 < AvgFRETvalues.iloc[:, i][j] <= 1:\r\n              AvgLMHvalues.iloc[:, i][j] = 2\r\n          else:\r\n              AvgLMHvalues.iloc[:, i][j] = np.nan\r\n    print(\"sortTrajectories is complete.\")\r\n    return selected_columns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues\r\n\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n\r\ndef traceClassification(df, threshold):\r\n    jumpsPerTrace = []\r\n    for i in range(len(df.columns)):\r\n      new_jumps = 0\r\n      previousValues=[]\r\n      for j in range(len(df)):\r\n        if j == 0:\r\n          start = df.iloc[:, i][j] - threshold\r\n          if start > 0:\r\n            previousValues.append(1)\r\n          else:\r\n            previousValues.append(-1)\r\n        else:\r\n          if ((df.iloc[:, i][j] - threshold) / abs((df.iloc[:, i][j] - threshold))) == previousValues[j-1]:\r\n            #print(((df.iloc[:, i][j] - threshold) / abs((df.iloc[:, i][j] - threshold))) == previousValues[j-1])\r\n            previousValues.append(previousValues[j-1])\r\n          else:\r\n            previousValues.append(previousValues[j-1]*-1)\r\n            new_jumps += 1\r\n      jumpsPerTrace.append(new_jumps)\r\n    return jumpsPerTrace\r\n\r\n\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n\r\n#{ } Add the surivial lifetime of the dyes, fit to a falling exponential\r\n\r\n### This function is used for traces that have been pre-selected using a user-specified filter in SPARTAN.\r\n### This includes all FRET traces. This is just used to look at photobleaching. Resolution is in seconds.\r\ndef FRETLifetimes(LMHvalues,window = 3, avg =True, resolution = 0.1):\r\n    Lifetimes = []\r\n    counter = 0\r\n    for i in range(len(LMHvalues.columns)):\r\n        for j in range(len(LMHvalues)):\r\n            if LMHvalues.iloc[:,i][j] == 0 or LMHvalues.iloc[:,i][j] == 1 or LMHvalues.iloc[:,i][j] == 2:\r\n                counter += 1\r\n        if avg == True:\r\n            Lifetimes.append(counter * resolution / window)\r\n        else:\r\n            Lifetimes.append(counter * resolution)\r\n        #print(counter)\r\n        counter = 0\r\n    print(\"FRETLifetimes is complete.\")\r\n    return Lifetimes\r\n\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n\r\n\r\n###This function is used for traces that have been processed by the function sortTraces. This will give the Lo-Mid-Hi data. This is used to calculate the dwell times of each state.\r\n\r\n#{ } Output dwell times of each state.\r\n\r\ndef LMHDistribution(LMHvalues, LMHnum, LMHOutput,resolution):\r\n    counter = 0\r\n    counterList = []\r\n    counterListResolution = []\r\n\r\n    for i in range(len(LMHvalues.columns)):\r\n        for j in range(len(LMHvalues)):\r\n            if LMHvalues.iloc[:, i][j] == float(LMHnum):\r\n                counter += 1\r\n            elif counter != 0:\r\n                counterList.append(counter)\r\n                counterListResolution.append(counter*resolution)\r\n                counter = 0  # Reset counter only when encountering a different value\r\n\r\n    # Append the last counter value if it's not zero after the loops\r\n    if counter != 0:\r\n        counterList.append(counter)\r\n        counterListResolution.append(counter * resolution)\r\n    with open(LMHOutput, 'w') as file:\r\n        file.write(str(counterList))\r\n    print(\"LMHDistribution is complete.\")\r\n    return counterList, counterListResolution\r\n\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n\r\n\r\n### This function is used for counting transitions that occur.\r\n\r\n#04-16-2024: Made a change at the end of each window, added else statement that takes care of when run into nan value - just break\r\ndef countTransitions(transitions, outputName):\r\n    allTransitions = []\r\n\r\n    for i in range(len(transitions.columns)):\r\n        col = [0, 0, 0, 0, 0, 0]  # Initialize transition counters\r\n        for p in range(0, len(transitions) - 1, 2):\r\n            window1 = transitions.iloc[p:p+2, i].tolist()\r\n            window2 = transitions.iloc[p+1:p+3, i].tolist()\r\n\r\n            invalid_windows = [[0, 0], [1, 1], [2, 2], [0], [1], [2], []]\r\n\r\n            if window1 not in invalid_windows:\r\n                if window1 == [0, 1]:\r\n                    col[0] += 1\r\n                elif window1 == [1, 2]:\r\n                    col[1] += 1\r\n                elif window1 == [0, 2]:\r\n                    col[2] += 1\r\n                elif window1 == [2, 1]:\r\n                    col[3] += 1\r\n                elif window1 == [2, 0]:\r\n                    col[4] += 1\r\n                elif window1 == [1, 0]:\r\n                    col[5] += 1\r\n\r\n\r\n            if window2 not in invalid_windows:\r\n                if window2 == [0, 1]:\r\n                    col[0] += 1\r\n                elif window2 == [1, 2]:\r\n                    col[1] += 1\r\n                elif window2 == [0, 2]:\r\n                    col[2] += 1\r\n                elif window2 == [2, 1]:\r\n                    col[3] += 1\r\n                elif window2 == [2, 0]:\r\n                    col[4] += 1\r\n                elif window2 == [1, 0]:\r\n                    col[5] += 1\r\n\r\n\r\n        allTransitions.append(col)\r\n    allTransitionsCompiledDF = pd.DataFrame(allTransitions, columns=['LoMid', 'MidHi', 'LoHi', 'HiMid', 'HiLo', 'MidLo'])\r\n    allTransitionsCompiledDF.to_csv(outputName, sep='\\t')\r\n    print(\"countTransitions is complete.\")\r\n    return allTransitionsCompiledDF\r\n\r\n# def countTransitionsValidWindow(transitions, outputName):\r\n#     allTransitions = []\r\n#\r\n#     for i in range(len(transitions.columns)):\r\n#         col = [0, 0, 0, 0, 0, 0]  # Initialize transition counters\r\n#         for p in range(0, len(transitions) - 1, 2):\r\n#             window1 = transitions.iloc[p:p+2, i].tolist()\r\n#             window2 = transitions.iloc[p+1:p+3, i].tolist()\r\n#\r\n#             valid_windows = [[0, 1], [1, 2], [0, 2], [2, 1], [2, 0], [1,0]]\r\n#\r\n#             if window1 in valid_windows:\r\n#                 if window1 == [0, 1]:\r\n#                     col[0] += 1\r\n#                 elif window1 == [1, 2]:\r\n#                     col[1] += 1\r\n#                 elif window1 == [0, 2]:\r\n#                     col[2] += 1\r\n#                 elif window1 == [2, 1]:\r\n#                     col[3] += 1\r\n#                 elif window1 == [2, 0]:\r\n#                     col[4] += 1\r\n#                 elif window1 == [1, 0]:\r\n#                     col[5] += 1\r\n#\r\n#             if window2 in valid_windows:\r\n#                 if window2 == [0, 1]:\r\n#                     col[0] += 1\r\n#                 elif window2 == [1, 2]:\r\n#                     col[1] += 1\r\n#                 elif window2 == [0, 2]:\r\n#                     col[2] += 1\r\n#                 elif window2 == [2, 1]:\r\n#                     col[3] += 1\r\n#                 elif window2 == [2, 0]:\r\n#                     col[4] += 1\r\n#                 elif window2 == [1, 0]:\r\n#                     col[5] += 1\r\n#\r\n#         allTransitions.append(col)\r\n#     allTransitionsCompiledDF = pd.DataFrame(allTransitions, columns=['LoMid', 'MidHi', 'LoHi', 'HiMid', 'HiLo', 'MidLo'])\r\n#     allTransitionsCompiledDF.to_csv(outputName, sep='\\t')\r\n#     return allTransitionsCompiledDF\r\n\r\n\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n\r\ndef energeticBarrierCalc(kConf, temp=298):\r\n    energeticBarrier=-8.314*temp*np.log(6.626E-34*kConf/(1.38E-23*temp))*0.00023901\r\n    print('Energetic barrier is ', energeticBarrier, ' kcal/mol')\r\n    print('Energetic barrier is approximately ', energeticBarrier/5, ' hydrogen bonds.')\r\n    return energeticBarrier\r\n\r\n\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n\r\ndef countAllStates(df):\r\n    counterList = []\r\n    for i in range(len(df.columns)):\r\n        for j in range(len(df)):\r\n            if df.iloc[:, i][j] <= 0:\r\n              pass\r\n            else:\r\n              counterList.append(df.iloc[:, i][j])\r\n    with open('StateHistogramDat.txt', 'w') as file:\r\n        file.write(str(counterList))\r\n    return counterList\r\n\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n#--------------------------#------------------------------#--------------------------------#---------------------------#--------------------------#\r\n\r\n\r\ndef completeTransitions(transitions):\r\n\r\n    \"\"\"0 to 1^n to 2\r\n       2 to 1^n to 0\r\n\r\n       These are productive transitions if we fully reach max/min states.\r\n\r\n       Code goal is to understand unproductive occlusions before a full\r\n       transition (i.e. 0-101101-2) or 2-121212221-0.\r\n\r\n       Need to count complete transistions (0-2 or 2-0) and number of occlusions.\"\"\"\r\n\r\n    complete_transitions_count = [0] * len(transitions.columns)\r\n    jump_transitions_count = [0] * len(transitions.columns)\r\n\r\n    # Updated part: List of lists to hold occlusions before each complete transition\r\n    occlusions_before_transition = [[] for _ in transitions.columns]\r\n\r\n    jump_windows = [[0, 2], [2, 0]]\r\n    no_change_windows = [[0, 0], [1, 1], [2, 2]]\r\n    zero_occlusions = [[1, 0]]\r\n    two_occlusions = [[1, 2]]\r\n\r\n    for i in range(len(transitions.columns)):\r\n        zero_state = False\r\n        two_state = False\r\n        # Reset occlusion counter for each column\r\n        occlusions = 0\r\n\r\n        for p in range(0, len(transitions) - 1):  # Adjusted range to avoid index out of range\r\n            window = transitions.iloc[p:p+2, i].tolist()\r\n\r\n\r\n            if zero_state == False and two_state == False:\r\n                if 0 in window:\r\n                    zero_state = True\r\n                if 2 in window:\r\n                    two_state = True\r\n\r\n                continue\r\n\r\n            if window in no_change_windows:\r\n                continue\r\n\r\n            if window in jump_windows:\r\n                jump_transitions_count[i] += 1\r\n\r\n                # When a jump window occurs, we reset the occlusion count\r\n                occlusions_before_transition[i].append(occlusions)\r\n                occlusions = 0\r\n\r\n                if window == [0, 2]:\r\n                    two_state = True\r\n                    zero_state = False\r\n                else:\r\n                    zero_state = True\r\n                    two_state = False\r\n\r\n                continue\r\n\r\n            if two_state and window in two_occlusions or zero_state and window in zero_occlusions:\r\n                occlusions += 1\r\n                continue\r\n\r\n            # Complete transition logic\r\n            if (two_state and window == [1, 0]) or (zero_state and window == [1, 2]):\r\n                complete_transitions_count[i] += 1\r\n                occlusions_before_transition[i].append(occlusions)\r\n                occlusions = 0\r\n\r\n                two_state = not two_state\r\n                zero_state = not zero_state\r\n                continue\r\n    print(\"completeTransitions is complete.\")\r\n    return complete_transitions_count, jump_transitions_count, occlusions_before_transition\r\n\r\ndef outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes):\r\n    with open(nameOfFile+\"_transitionsStats.txt\", \"a\") as f:\r\n        print(\"Complete:\", completeOcclusions, file=f)\r\n        print(\"Jump:\", jumps, file=f)\r\n        print(\"Occ Per Complete:\", unproductiveOcclusions, file=f)\r\n        print(\"Total Time:\", TotalTimes, file=f)\r\n        totalOcc = 0\r\n        totalJump = 0\r\n        totalComplete = 0\r\n        for ele in range(0, len(jumps)):\r\n            totalComplete = totalComplete + completeOcclusions[ele]\r\n        for ele in range(0, len(jumps)):\r\n            totalJump = totalJump + jumps[ele]\r\n        for ele in range(0, len(unproductiveOcclusions)):\r\n            for ele2 in range(0, len(unproductiveOcclusions[ele])):\r\n                totalOcc = totalOcc + unproductiveOcclusions[ele][ele2]\r\n        print(\"Jump:\", totalJump, file=f)\r\n        print(\"Jump+Occ:\", totalJump + totalOcc, file=f)\r\n        print(\"Total Unproductive Occ: \", totalOcc, file=f)\r\n        print(\"Total Productive occ: \", totalComplete, file=f)\r\n        print(\"Total Productive/sec: \", totalComplete / TotalTimes, file=f)\r\n        print(\"Ratio of Productive to Unproductive; \", totalComplete / totalOcc, file=f)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/fretFunctions.py b/fretFunctions.py
+--- a/fretFunctions.py	(revision 585a0ada582311aa65765a2e15e92e3e8ae17698)
++++ b/fretFunctions.py	(date 1720046655377)
+@@ -309,7 +309,8 @@
+ 
+     # Updated part: List of lists to hold occlusions before each complete transition
+     occlusions_before_transition = [[] for _ in transitions.columns]
+-
++    occlusionsFromZeroState = [[] for _ in transitions.columns]
++    occlusionsFromTwoState = [[] for _ in transitions.columns]
+     jump_windows = [[0, 2], [2, 0]]
+     no_change_windows = [[0, 0], [1, 1], [2, 2]]
+     zero_occlusions = [[1, 0]]
+@@ -319,8 +320,8 @@
+         zero_state = False
+         two_state = False
+         # Reset occlusion counter for each column
+-        occlusions = 0
+-
++        occlusionsFromZero = 0
++        occlusionFromTwo = 0
+         for p in range(0, len(transitions) - 1):  # Adjusted range to avoid index out of range
+             window = transitions.iloc[p:p+2, i].tolist()
+ 
+@@ -340,8 +341,11 @@
+                 jump_transitions_count[i] += 1
+ 
+                 # When a jump window occurs, we reset the occlusion count
+-                occlusions_before_transition[i].append(occlusions)
+-                occlusions = 0
++                occlusions_before_transition[i].append(occlusionFromTwo+occlusionsFromZero)
++                occlusionsFromZeroState[i].append(occlusionsFromZero)
++                occlusionsFromTwoState[i].append(occlusionFromTwo)
++                occlusionsFromZero = 0
++                occlusionFromTwo = 0
+ 
+                 if window == [0, 2]:
+                     two_state = True
+@@ -352,23 +356,28 @@
+ 
+                 continue
+ 
+-            if two_state and window in two_occlusions or zero_state and window in zero_occlusions:
+-                occlusions += 1
+-                continue
++            if two_state and window in two_occlusions:
++                occlusionFromTwo += 1
++            if zero_state and window in zero_occlusions:
++                occlusionsFromZero += 1
++
+ 
+             # Complete transition logic
+             if (two_state and window == [1, 0]) or (zero_state and window == [1, 2]):
+                 complete_transitions_count[i] += 1
+-                occlusions_before_transition[i].append(occlusions)
+-                occlusions = 0
++                occlusions_before_transition[i].append(occlusionFromTwo + occlusionsFromZero)
++                occlusionsFromZeroState[i].append(occlusionsFromZero)
++                occlusionsFromTwoState[i].append(occlusionFromTwo)
++                occlusionsFromZero = 0
++                occlusionFromTwo = 0
+ 
+                 two_state = not two_state
+                 zero_state = not zero_state
+                 continue
+     print("completeTransitions is complete.")
+-    return complete_transitions_count, jump_transitions_count, occlusions_before_transition
++    return complete_transitions_count, jump_transitions_count, occlusions_before_transition, occlusionsFromZeroState, occlusionsFromTwoState
+ 
+-def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes):
++def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes, occlusionsFromZeroState, occlusionsFromTwoState):
+     with open(nameOfFile+"_transitionsStats.txt", "a") as f:
+         print("Complete:", completeOcclusions, file=f)
+         print("Jump:", jumps, file=f)
+@@ -389,4 +398,6 @@
+         print("Total Unproductive Occ: ", totalOcc, file=f)
+         print("Total Productive occ: ", totalComplete, file=f)
+         print("Total Productive/sec: ", totalComplete / TotalTimes, file=f)
+-        print("Ratio of Productive to Unproductive; ", totalComplete / totalOcc, file=f)
+\ No newline at end of file
++        print("Ratio of Productive to Unproductive; ", totalComplete / totalOcc, file=f)
++        print("Unproductive Occlusion from Zero State: ", occlusionsFromZeroState)
++        print("Unproductive Occlusion from Two State: ", occlusionsFromTwoState)
+Index: init.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from fretFunctions import *\r\nimport warnings; warnings.simplefilter('ignore')\r\nimport time\r\nimport os\r\nimport shutil\r\nimport numpy as np\r\nimport pandas as pd\r\nimport matplotlib.pyplot as plt\r\n\r\n#Edit me!#\r\n\r\nnewFileStorage = 'Test' #name this for folder output\r\nif not os.path.exists(f\"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}\"):\r\n    os.mkdir(newFileStorage)\r\nos.chdir(f\"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}\") #moves you into the correct directory so all .txt files are properly stored\r\ntraceInputTemp = r\"C:\\Users\\tyeh\\Downloads\\WT_AllTraces_all_fret_forOrigin.txt\" #this is the input file from SPARTAN\r\ntraceInput = traceInputTemp.replace('\\\\','/') #just formatting stuff\r\noutputName = 'test' #this is the output name for all your files\r\n\r\n#Edit me!#\r\n\r\n\r\nAllColumns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues = sortTrajectories(traceInput, window_size = 3, skip = False, resolution=2)\r\nlo_LMH, lo_LMH_res = LMHDistribution(AvgLMHvalues, 0,f'lo_{outputName}.txt',resolution=0.150)\r\nmid_LMH,mid_LMH_res = LMHDistribution(AvgLMHvalues, 1,f'mid_{outputName}.txt',resolution=0.150)\r\nhi_LMH, hi_LMH_res = LMHDistribution(AvgLMHvalues, 2,f'hi_{outputName}.txt',resolution=0.150)\r\ncountTransitions(AvgLMHvalues,f'transitions_{outputName}.txt')\r\nAvgFRETvalues.to_csv(f'FRETvalues_{outputName}.txt', sep='\\t')\r\nAvgLMHvalues.to_csv(f'LMHvalues_{outputName}.txt', sep='\\t')\r\nTotalTimes = sum(FRETLifetimes(LMHvalues))\r\ncompleteOcclusions, jumps, unproductiveOcclusions=completeTransitions(AvgLMHvalues)\r\noutputCompleteTransitions(outputName, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes)\r\n\r\n\r\nbinwidth = 1\r\nplt.subplot(1,3,1)\r\nplt.hist(lo_LMH, bins=range(min(lo_LMH), max(lo_LMH) + binwidth, binwidth),color='red', edgecolor='black')\r\nplt.xlabel('Frames')\r\nplt.ylabel('Frequency')\r\nplt.title('Lo')\r\nplt.xlim((0,30))\r\n\r\nplt.subplot(1,3,2)\r\nplt.hist(mid_LMH, bins=range(min(mid_LMH), max(mid_LMH) + binwidth, binwidth), color='white', edgecolor='black')\r\nplt.xlabel('Frames')\r\nplt.ylabel('Frequency')\r\nplt.title('Mid')\r\nplt.xlim((0,30))\r\n\r\nplt.subplot(1,3,3)\r\nplt.hist(hi_LMH, bins=range(min(hi_LMH), max(hi_LMH) + binwidth, binwidth), edgecolor='black')\r\nplt.xlabel('Frames')\r\nplt.ylabel('Frequency')\r\nplt.title('Hi')\r\nplt.xlim((0,30))\r\n\r\n\r\n# Display the plot\r\nfigure = plt.gcf() # get current figure\r\nfigure.set_size_inches(20, 6)\r\nplt.savefig(f\"{outputName}.jpg\", transparent=True, dpi = 800)\r\nplt.show()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/init.py b/init.py
+--- a/init.py	(revision 585a0ada582311aa65765a2e15e92e3e8ae17698)
++++ b/init.py	(date 1720056975696)
+@@ -6,57 +6,66 @@
+ import numpy as np
+ import pandas as pd
+ import matplotlib.pyplot as plt
++import tkinter as tk
++from tkinter import filedialog
+ 
+-#Edit me!#
+ 
+ newFileStorage = 'Test' #name this for folder output
++
++#Edit me!#
++filename = filedialog.askdirectory(initialdir="C:/Users/trevo/PycharmProjects/fretStuff/Data")
++root = tk.Tk()
++root.withdraw()
++traceInputTemp = filedialog.askopenfilenames().replace('\\','/')
++traceInput = traceInputTemp[0]
++
++
+ if not os.path.exists(f"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}"):
+     os.mkdir(newFileStorage)
+ os.chdir(f"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}") #moves you into the correct directory so all .txt files are properly stored
+-traceInputTemp = r"C:\Users\tyeh\Downloads\WT_AllTraces_all_fret_forOrigin.txt" #this is the input file from SPARTAN
+ traceInput = traceInputTemp.replace('\\','/') #just formatting stuff
+ outputName = 'test' #this is the output name for all your files
+ 
+ #Edit me!#
+ 
+ 
+-AllColumns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues = sortTrajectories(traceInput, window_size = 3, skip = False, resolution=2)
+-lo_LMH, lo_LMH_res = LMHDistribution(AvgLMHvalues, 0,f'lo_{outputName}.txt',resolution=0.150)
+-mid_LMH,mid_LMH_res = LMHDistribution(AvgLMHvalues, 1,f'mid_{outputName}.txt',resolution=0.150)
+-hi_LMH, hi_LMH_res = LMHDistribution(AvgLMHvalues, 2,f'hi_{outputName}.txt',resolution=0.150)
+-countTransitions(AvgLMHvalues,f'transitions_{outputName}.txt')
+-AvgFRETvalues.to_csv(f'FRETvalues_{outputName}.txt', sep='\t')
+-AvgLMHvalues.to_csv(f'LMHvalues_{outputName}.txt', sep='\t')
+-TotalTimes = sum(FRETLifetimes(LMHvalues))
+-completeOcclusions, jumps, unproductiveOcclusions=completeTransitions(AvgLMHvalues)
+-outputCompleteTransitions(outputName, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes)
+-
+-
+-binwidth = 1
+-plt.subplot(1,3,1)
+-plt.hist(lo_LMH, bins=range(min(lo_LMH), max(lo_LMH) + binwidth, binwidth),color='red', edgecolor='black')
+-plt.xlabel('Frames')
+-plt.ylabel('Frequency')
+-plt.title('Lo')
+-plt.xlim((0,30))
+-
+-plt.subplot(1,3,2)
+-plt.hist(mid_LMH, bins=range(min(mid_LMH), max(mid_LMH) + binwidth, binwidth), color='white', edgecolor='black')
+-plt.xlabel('Frames')
+-plt.ylabel('Frequency')
+-plt.title('Mid')
+-plt.xlim((0,30))
+-
+-plt.subplot(1,3,3)
+-plt.hist(hi_LMH, bins=range(min(hi_LMH), max(hi_LMH) + binwidth, binwidth), edgecolor='black')
+-plt.xlabel('Frames')
+-plt.ylabel('Frequency')
+-plt.title('Hi')
+-plt.xlim((0,30))
+-
+-
+-# Display the plot
+-figure = plt.gcf() # get current figure
+-figure.set_size_inches(20, 6)
+-plt.savefig(f"{outputName}.jpg", transparent=True, dpi = 800)
+-plt.show()
++# AllColumns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues = sortTrajectories(traceInput, window_size = 3, skip = False, resolution=2)
++# # lo_LMH, lo_LMH_res = LMHDistribution(AvgLMHvalues, 0,f'lo_{outputName}.txt',resolution=0.150)
++# # mid_LMH,mid_LMH_res = LMHDistribution(AvgLMHvalues, 1,f'mid_{outputName}.txt',resolution=0.150)
++# # hi_LMH, hi_LMH_res = LMHDistribution(AvgLMHvalues, 2,f'hi_{outputName}.txt',resolution=0.150)
++# # countTransitions(AvgLMHvalues,f'transitions_{outputName}.txt')
++# # AvgFRETvalues.to_csv(f'FRETvalues_{outputName}.txt', sep='\t')
++# # AvgLMHvalues.to_csv(f'LMHvalues_{outputName}.txt', sep='\t')
++# TotalTimes = sum(FRETLifetimes(LMHvalues))
++# completeOcclusions, jumps, unproductiveOcclusions, OccFromZero, OccFromTwo=completeTransitions(AvgLMHvalues)
++# outputCompleteTransitions(outputName, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes, OccFromZero, OccFromTwo)
++#
++#
++# # binwidth = 1
++# # plt.subplot(1,3,1)
++# # plt.hist(lo_LMH, bins=range(min(lo_LMH), max(lo_LMH) + binwidth, binwidth),color='red', edgecolor='black')
++# # plt.xlabel('Frames')
++# # plt.ylabel('Frequency')
++# # plt.title('Lo')
++# # plt.xlim((0,30))
++# #
++# # plt.subplot(1,3,2)
++# # plt.hist(mid_LMH, bins=range(min(mid_LMH), max(mid_LMH) + binwidth, binwidth), color='white', edgecolor='black')
++# # plt.xlabel('Frames')
++# # plt.ylabel('Frequency')
++# # plt.title('Mid')
++# # plt.xlim((0,30))
++# #
++# # plt.subplot(1,3,3)
++# # plt.hist(hi_LMH, bins=range(min(hi_LMH), max(hi_LMH) + binwidth, binwidth), edgecolor='black')
++# # plt.xlabel('Frames')
++# # plt.ylabel('Frequency')
++# # plt.title('Hi')
++# # plt.xlim((0,30))
++# #
++# #
++# # # Display the plot
++# # figure = plt.gcf() # get current figure
++# # figure.set_size_inches(20, 6)
++# # plt.savefig(f"{outputName}.jpg", transparent=True, dpi = 800)
++# # plt.show()
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"e436eb66-7e73-4d9c-aeb8-652c9d079a4f\" name=\"Changes\" comment=\"code now provides occlusion data for each state\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"ChangesViewManager\">\r\n    <option name=\"groupingKeys\">\r\n      <option value=\"directory\" />\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"master\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;yehtrevor&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/yehtrevor/fretStuff.git&quot;,\r\n    &quot;accountId&quot;: &quot;088f1b0e-c54c-4803-899a-6a62f8d03a81&quot;\r\n  }\r\n}</component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 4\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2ikUjus6ZCEuFrGGx9Ky7yRPfoC\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;Python.fretFunctions.executor&quot;: &quot;Run&quot;,\r\n    &quot;Python.init.executor&quot;: &quot;Run&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;file-input-changes&quot;,\r\n    &quot;last_opened_file_path&quot;: &quot;C:/Users/trevo/PycharmProjects/fretStuff&quot;\r\n  }\r\n}</component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"MoveFile.RECENT_KEYS\">\r\n      <recent name=\"C:\\Users\\trevo\\PycharmProjects\\fretStuff\\Data\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-python-sdk-975db3bf15a3-31b6be0877a2-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.18034.82\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"e436eb66-7e73-4d9c-aeb8-652c9d079a4f\" name=\"Changes\" comment=\"\" />\r\n      <created>1720034206486</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1720034206486</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"code now provides occlusion data for each state\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1720045208729</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1720045208729</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"2\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"code now provides occlusion data for each state\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"code now provides occlusion data for each state\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 585a0ada582311aa65765a2e15e92e3e8ae17698)
++++ b/.idea/workspace.xml	(date 1720046655511)
+@@ -6,6 +6,8 @@
+   <component name="ChangeListManager">
+     <list default="true" id="e436eb66-7e73-4d9c-aeb8-652c9d079a4f" name="Changes" comment="code now provides occlusion data for each state">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/fretFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/fretFunctions.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/init.py" beforeDir="false" afterPath="$PROJECT_DIR$/init.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -24,6 +26,7 @@
+       </map>
+     </option>
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++    <option name="SWAP_SIDES_IN_COMPARE_BRANCHES" value="true" />
+   </component>
+   <component name="GitHubPullRequestSearchHistory">{
+   &quot;lastFilter&quot;: {
+@@ -58,6 +61,31 @@
+     <key name="MoveFile.RECENT_KEYS">
+       <recent name="C:\Users\trevo\PycharmProjects\fretStuff\Data" />
+     </key>
++  </component>
++  <component name="RunManager">
++    <configuration name="init" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
++      <module name="FRETAnalysis" />
++      <option name="ENV_FILES" value="" />
++      <option name="INTERPRETER_OPTIONS" value="" />
++      <option name="PARENT_ENVS" value="true" />
++      <envs>
++        <env name="PYTHONUNBUFFERED" value="1" />
++      </envs>
++      <option name="SDK_HOME" value="" />
++      <option name="SDK_NAME" value="Python 3.12 (fretStuff)" />
++      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
++      <option name="IS_MODULE_SDK" value="false" />
++      <option name="ADD_CONTENT_ROOTS" value="true" />
++      <option name="ADD_SOURCE_ROOTS" value="true" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/init.py" />
++      <option name="PARAMETERS" value="" />
++      <option name="SHOW_COMMAND_LINE" value="false" />
++      <option name="EMULATE_TERMINAL" value="false" />
++      <option name="MODULE_MODE" value="false" />
++      <option name="REDIRECT_INPUT" value="false" />
++      <option name="INPUT_FILE" value="" />
++      <method v="2" />
++    </configuration>
+   </component>
+   <component name="SharedIndexes">
+     <attachedChunks>
+@@ -83,7 +111,23 @@
+       <option name="project" value="LOCAL" />
+       <updated>1720045208729</updated>
+     </task>
+-    <option name="localTasksCounter" value="2" />
++    <task id="LOCAL-00002" summary="code now provides occlusion data for each state">
++      <option name="closed" value="true" />
++      <created>1720045373647</created>
++      <option name="number" value="00002" />
++      <option name="presentableId" value="LOCAL-00002" />
++      <option name="project" value="LOCAL" />
++      <updated>1720045373647</updated>
++    </task>
++    <task id="LOCAL-00003" summary="code now provides occlusion data for each state">
++      <option name="closed" value="true" />
++      <created>1720045642081</created>
++      <option name="number" value="00003" />
++      <option name="presentableId" value="LOCAL-00003" />
++      <option name="project" value="LOCAL" />
++      <updated>1720045642081</updated>
++    </task>
++    <option name="localTasksCounter" value="4" />
+     <servers />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+@@ -91,7 +135,19 @@
+       <map>
+         <entry key="MAIN">
+           <value>
+-            <State />
++            <State>
++              <option name="FILTERS">
++                <map>
++                  <entry key="branch">
++                    <value>
++                      <list>
++                        <option value="origin/occlusion-changes" />
++                      </list>
++                    </value>
++                  </entry>
++                </map>
++              </option>
++            </State>
+           </value>
+         </entry>
+       </map>

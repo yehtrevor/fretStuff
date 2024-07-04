@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53ba7faf-15bb-44c5-bf59-7359651b6be7" name="Changes" comment="initial commit">
+    <list default="true" id="e436eb66-7e73-4d9c-aeb8-652c9d079a4f" name="Changes" comment="file-explorer partly done&#10;added occlusions from each state">
+      <change afterPath="$PROJECT_DIR$/Data/Y59F_best_fret_forOrigin.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data/Test/test_transitionsStats.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fretFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/fretFunctions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/init.py" beforeDir="false" afterPath="$PROJECT_DIR$/init.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -13,47 +16,55 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-      </list>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="file-input-changes" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "yehtrevor"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;yehtrevor&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/yehtrevor/fretStuff",
-    "accountId": "67446fde-5842-453b-bb87-ee25dded70b4"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/yehtrevor/fretStuff.git&quot;,
+    &quot;accountId&quot;: &quot;088f1b0e-c54c-4803-899a-6a62f8d03a81&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
-  <component name="ProjectId" id="2ik0ZnHTMnZHNFAWF283Gz0YOFa" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2ikUjus6ZCEuFrGGx9Ky7yRPfoC" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.init.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.fretFunctions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.init.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;file-explorer&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/trevo/PycharmProjects/fretStuff&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\trevo\PycharmProjects\fretStuff\Data" />
+    </key>
+  </component>
   <component name="RunManager">
-    <configuration name="init" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="init" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="FRETAnalysis" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -62,8 +73,9 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (fretStuff)" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/init.py" />
@@ -75,11 +87,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Python.init" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -91,29 +98,37 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="53ba7faf-15bb-44c5-bf59-7359651b6be7" name="Changes" comment="" />
-      <created>1720019325982</created>
+      <changelist id="e436eb66-7e73-4d9c-aeb8-652c9d079a4f" name="Changes" comment="" />
+      <created>1720034206486</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1720019325982</updated>
+      <updated>1720034206486</updated>
     </task>
-    <task id="LOCAL-00001" summary="initial commit">
+    <task id="LOCAL-00001" summary="code now provides occlusion data for each state">
       <option name="closed" value="true" />
-      <created>1720020298268</created>
+      <created>1720045208729</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1720020298268</updated>
+      <updated>1720045208729</updated>
     </task>
-    <task id="LOCAL-00002" summary="initial commit">
+    <task id="LOCAL-00002" summary="file-explorer partly done">
       <option name="closed" value="true" />
-      <created>1720030508053</created>
+      <created>1720057417827</created>
       <option name="number" value="00002" />
       <option name="presentableId" value="LOCAL-00002" />
       <option name="project" value="LOCAL" />
-      <updated>1720030508053</updated>
+      <updated>1720057417827</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="file-explorer partly done&#10;added occlusions from each state">
+      <option name="closed" value="true" />
+      <created>1720059099929</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1720059099929</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -128,7 +143,9 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
+    <MESSAGE value="code now provides occlusion data for each state" />
+    <MESSAGE value="file-explorer partly done" />
+    <MESSAGE value="file-explorer partly done&#10;added occlusions from each state" />
+    <option name="LAST_COMMIT_MESSAGE" value="file-explorer partly done&#10;added occlusions from each state" />
   </component>
 </project>

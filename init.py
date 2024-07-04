@@ -6,16 +6,29 @@ import shutil
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter import filedialog
+
+
+newFileStorage = 'Y59F_BestFRET' #name this for folder output
+outputName = 'Y59F_BestFRET' #this is the output name for all your files
+
+
 
 #Edit me!#
+startDir = filedialog.askdirectory(initialdir="C:/Users/trevo/PycharmProjects/fretStuff")
+root = tk.Tk()
+root.withdraw()
+traceInputTemp = filedialog.askopenfilenames()
+traceInput = traceInputTemp[0].replace('\\','/')
 
-newFileStorage = 'Test' #name this for folder output
-if not os.path.exists(f"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}"):
-    os.mkdir(newFileStorage)
-os.chdir(f"C:/Users/tyeh/Desktop/FRETAnalysis/FRETAnalysis/{newFileStorage}") #moves you into the correct directory so all .txt files are properly stored
-traceInputTemp = r"C:\Users\tyeh\Downloads\WT_AllTraces_all_fret_forOrigin.txt" #this is the input file from SPARTAN
-traceInput = traceInputTemp.replace('\\','/') #just formatting stuff
-outputName = 'test' #this is the output name for all your files
+
+if not os.path.exists(startDir +'/' + newFileStorage):
+    os.mkdir(startDir +'/' + newFileStorage)
+
+os.chdir(startDir +'/' +newFileStorage+'/') #moves you into the correct directory so all .txt files are properly stored
+print(os.getcwd())
+
 
 #Edit me!#
 
@@ -28,8 +41,11 @@ countTransitions(AvgLMHvalues,f'transitions_{outputName}.txt')
 AvgFRETvalues.to_csv(f'FRETvalues_{outputName}.txt', sep='\t')
 AvgLMHvalues.to_csv(f'LMHvalues_{outputName}.txt', sep='\t')
 TotalTimes = sum(FRETLifetimes(LMHvalues))
-completeOcclusions, jumps, unproductiveOcclusions=completeTransitions(AvgLMHvalues)
-outputCompleteTransitions(outputName, completeOcclusions, jumps, unproductiveOcclusions, TotalTimes)
+completeOcclusions, jumps, unproductiveOcclusions,unproductiveOcclusionsTotal, OccFromZero, OccFromTwo=completeTransitions(AvgLMHvalues)
+#outputCompleteTransitions(outputName, completeOcclusions, jumps, unproductiveOcclusions, unproductiveOcclusionsTotal, TotalTimes, OccFromZero, OccFromTwo)
+transitionProb = transitionProbability(unproductiveOcclusions)
+with open(f"UnprodOccBeforeTransition_{outputName}", 'w') as file:
+    file.write(str(transitionProb))
 
 
 binwidth = 1
@@ -58,5 +74,15 @@ plt.xlim((0,30))
 # Display the plot
 figure = plt.gcf() # get current figure
 figure.set_size_inches(20, 6)
-plt.savefig(f"{outputName}.jpg", transparent=True, dpi = 800)
+plt.savefig(f"{outputName}_LMH_Histograms.jpg", transparent=True, dpi = 800)
+plt.show()
+
+plt.hist(transitionProb, density = True, cumulative=True,histtype="step", bins=range(min(transitionProb), max(transitionProb) + binwidth, binwidth), edgecolor='black')
+plt.xlim(-.5, max(transitionProb))
+plt.xlabel('Unproductive Occlusion')
+plt.ylabel('CDF')
+plt.title('Cumulative Distribution of Unproductive Occlusions')
+figure = plt.gcf() # get current figure
+figure.set_size_inches(8, 6)
+plt.savefig(f"{outputName}_CumulativeSum_UnprodOcc.jpg", transparent=True, dpi = 800)
 plt.show()
