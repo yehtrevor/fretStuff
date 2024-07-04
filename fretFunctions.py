@@ -384,6 +384,13 @@ def completeTransitions(transitions):
     print("completeTransitions is complete.")
     return complete_transitions_count, jump_transitions_count, occlusions_before_transition, occlusions_before_transition_total, occlusionsFromZeroState, occlusionsFromTwoState
 
+def transitionProbability(unproductiveOcclusion):
+    occlusionBeforeTransition = []
+    for x in range(0, len(unproductiveOcclusion)):
+        for y in range(0, len(unproductiveOcclusion[x])):
+            occlusionBeforeTransition.append(unproductiveOcclusion[x][y])
+    return occlusionBeforeTransition
+
 def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiveOcclusions,occlusions_before_transition_total , TotalTimes, occlusionsFromZeroState, occlusionsFromTwoState):
     with open(nameOfFile+"_transitionsStats.txt", "a") as f:
         print("Complete:", completeOcclusions, file=f)
@@ -424,5 +431,5 @@ def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiv
         print("Total Productive occ: ", totalComplete, file=f)
         print("Total Productive/sec: ", totalComplete / TotalTimes, file=f)
         print("Ratio of Productive to Unproductive; ", totalComplete / totalOcc, file=f)
-        print("Unproductive Occlusion from Zero State: ", totalZeroState)
-        print("Unproductive Occlusion from Two State: ", totalTwoState)
+        print("Unproductive Occlusion from Zero State: ", totalZeroState,file=f)
+        print("Unproductive Occlusion from Two State: ", totalTwoState,file=f)
