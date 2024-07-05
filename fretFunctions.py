@@ -325,8 +325,8 @@ def completeTransitions(transitions):
         occlusionFromTwo = 0
         occlusions = 0
         for p in range(0, len(transitions) - 1):  # Adjusted range to avoid index out of range
+            #reminder that p:p+2 returns windows of two int. 0:2 gives index 0 and 1, noninclusive of 2
             window = transitions.iloc[p:p+2, i].tolist()
-
 
             if zero_state == False and two_state == False:
                 if 0 in window:
@@ -433,3 +433,25 @@ def outputCompleteTransitions(nameOfFile, completeOcclusions, jumps, unproductiv
         print("Ratio of Productive to Unproductive; ", totalComplete / totalOcc, file=f)
         print("Unproductive Occlusion from Zero State: ", totalZeroState,file=f)
         print("Unproductive Occlusion from Two State: ", totalTwoState,file=f)
+
+
+
+def midStateProbability(transitions):
+    zero_occlusions = [[1, 0]]
+    two_occlusions = [[1, 2]]
+    occlusionsFromZero = 0
+    occlusionFromTwo = 0
+    for i in range(len(transitions.columns)):
+        zero_state = False
+        two_state = False
+        # Reset occlusion counter for each column
+        for p in range(0, len(transitions) - 1):  # Adjusted range to avoid index out of range
+            #reminder that p:p+2 returns windows of two int. 0:2 gives index 0 and 1, noninclusive of 2
+            window = transitions.iloc[p:p+2, i].tolist()
+            if window in zero_occlusions:
+                occlusionsFromZero += 1
+            if window in two_occlusions:
+                occlusionFromTwo += 1
+
+    print("completeTransitions is complete.")
+    return occlusionsFromZero, occlusionFromTwo
