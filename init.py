@@ -47,6 +47,9 @@ transitionProb = transitionProbability(unproductiveOcclusions)
 with open(f"UnprodOccBeforeTransition_{outputName}", 'w') as file:
     file.write(str(transitionProb))
 
+zeroStates, twoStates = midStateProbability(AvgLMHvalues)
+print('Percentage of Mid to Lo',zeroStates/(zeroStates+twoStates))
+print('Percentage of Mid to Hi',twoStates/(zeroStates+twoStates))
 
 binwidth = 1
 plt.subplot(1,3,1)
@@ -55,6 +58,7 @@ plt.xlabel('Frames')
 plt.ylabel('Frequency')
 plt.title('Lo')
 plt.xlim((0,30))
+
 
 plt.subplot(1,3,2)
 plt.hist(mid_LMH, bins=range(min(mid_LMH), max(mid_LMH) + binwidth, binwidth), color='white', edgecolor='black')

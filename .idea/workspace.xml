@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e436eb66-7e73-4d9c-aeb8-652c9d079a4f" name="Changes" comment="file-explorer partly done&#10;added occlusions from each state">
-      <change afterPath="$PROJECT_DIR$/Data/Y59F_best_fret_forOrigin.txt" afterDir="false" />
+    <list default="true" id="e436eb66-7e73-4d9c-aeb8-652c9d079a4f" name="Changes" comment="file-explorer completed&#10;Unproductive occlusions are now calculated separately from individual states&#10;Occlusions that are calculated without separation is still in code, will need to remove it on the merge">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data/Test/test_transitionsStats.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/fretFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/fretFunctions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/init.py" beforeDir="false" afterPath="$PROJECT_DIR$/init.py" afterDir="false" />
     </list>
@@ -128,7 +126,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720059099929</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="file-explorer completed&#10;Unproductive occlusions are now calculated separately from individual states&#10;Occlusions that are calculated without separation is still in code, will need to remove it on the merge">
+      <option name="closed" value="true" />
+      <created>1720069446208</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1720069446209</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -136,7 +142,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/file-explorer" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -146,6 +164,7 @@
     <MESSAGE value="code now provides occlusion data for each state" />
     <MESSAGE value="file-explorer partly done" />
     <MESSAGE value="file-explorer partly done&#10;added occlusions from each state" />
-    <option name="LAST_COMMIT_MESSAGE" value="file-explorer partly done&#10;added occlusions from each state" />
+    <MESSAGE value="file-explorer completed&#10;Unproductive occlusions are now calculated separately from individual states&#10;Occlusions that are calculated without separation is still in code, will need to remove it on the merge" />
+    <option name="LAST_COMMIT_MESSAGE" value="file-explorer completed&#10;Unproductive occlusions are now calculated separately from individual states&#10;Occlusions that are calculated without separation is still in code, will need to remove it on the merge" />
   </component>
 </project>
