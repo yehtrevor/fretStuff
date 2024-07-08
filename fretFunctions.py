@@ -325,9 +325,8 @@ def completeTransitions(transitions):
         occlusionFromTwo = 0
         occlusions = 0
         for p in range(0, len(transitions) - 1):  # Adjusted range to avoid index out of range
-            #reminder that p:p+2 returns windows of two int. 0:2 gives index 0 and 1, noninclusive of 2
+            #reminder that p:p+2 returns windows of two int. 0:2 gives index 0 and 1, noninclusive of 2; i is for the columns
             window = transitions.iloc[p:p+2, i].tolist()
-
             if zero_state == False and two_state == False:
                 if 0 in window:
                     zero_state = True
@@ -455,3 +454,95 @@ def midStateProbability(transitions):
 
     print("completeTransitions is complete.")
     return occlusionsFromZero, occlusionFromTwo
+
+def newcompleteTransitions(transitions):
+
+    """0 to 1^n to 2
+       2 to 1^n to 0
+
+       These are productive transitions if we fully reach max/min states.
+
+       Code goal is to understand unproductive occlusions before a full
+       transition (i.e. 0-101101-2) or 2-121212221-0.
+
+       Need to count complete transistions (0-2 or 2-0) and number of occlusions."""
+
+    complete_transitions_count = [0] * len(transitions.columns)
+    complete_transitions_count_fromZero = [0] * len(transitions.columns)
+    complete_transitions_count_fromTwo = [0] * len(transitions.columns)
+    jump_transitions_count = [0] * len(transitions.columns)
+
+    # Updated part: List of lists to hold occlusions before each complete transition
+    occlusions_before_transition_total= [[] for _ in transitions.columns]
+    occlusions_before_transition = [[] for _ in transitions.columns]
+    occlusionsFromZeroState = [[] for _ in transitions.columns]
+    occlusionsFromTwoState = [[] for _ in transitions.columns]
+    jump_windows = [[0, 2], [2, 0]]
+    no_change_windows = [[0, 0], [1, 1], [2, 2]]
+    zero_occlusions = [[1, 0]]
+    two_occlusions = [[1, 2]]
+
+    for i in range(len(transitions.columns)):
+        zero_state = False
+        two_state = False
+        # Reset occlusion counter for each column
+        occlusionsFromZero = 0
+        occlusionFromTwo = 0
+        occlusions = 0
+        for p in range(0, len(transitions) - 1):  # Adjusted range to avoid index out of range
+            #reminder that p:p+2 returns windows of two int. 0:2 gives index 0 and 1, noninclusive of 2; i is for the columns
+            window = transitions.iloc[p:p+2, i].tolist()
+            if zero_state == False and two_state == False:
+                if 0 == window[0]:
+                    zero_state = True
+                if 2 == window[0]:
+                    two_state = True
+
+                continue
+
+            if window in no_change_windows:
+                continue
+
+            if window in jump_windows:
+                jump_transitions_count[i] += 1
+
+                # When a jump window occurs, we reset the occlusion count
+                occlusions_before_transition_total[i].append(occlusionFromTwo + occlusionsFromZero)
+                occlusionsFromZeroState[i].append(occlusionsFromZero)
+                occlusionsFromTwoState[i].append(occlusionFromTwo)
+                occlusions = 0
+                #occlusionsFromZero = 0
+                #occlusionFromTwo = 0
+
+                if window == [0, 2]:
+                    two_state = True
+                    zero_state = False
+                else:
+                    zero_state = True
+                    two_state = False
+
+                continue
+
+            if two_state and window in two_occlusions:
+                occlusionFromTwo += 1
+
+            if zero_state and window in zero_occlusions:
+                occlusionsFromZero += 1
+
+
+            # Complete transition logic
+            if (two_state and window == [1, 0]):
+                complete_transitions_count[i] += 1
+                complete_transitions_count_fromTwo[i] += 1
+                occlusionsFromTwoState[i].append(occlusionFromTwo)
+                occlusionFromTwo = 0
+                two_state = not two_state
+            if (zero_state and window == [1, 2]):
+                complete_transitions_count[i] += 1
+                complete_transitions_count_fromZero[i] +=1
+                occlusionsFromZeroState[i].append(occlusionsFromZero)
+                occlusionsFromZero = 0
+                zero_state = not zero_state
+
+    print("completeTransitions is complete.")
+    return complete_transitions_count, jump_transitions_count, occlusions_before_transition, occlusions_before_transition_total, occlusionsFromZeroState, occlusionsFromTwoState, complete_transitions_count_fromZero,complete_transitions_count_fromTwo
