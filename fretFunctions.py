@@ -544,5 +544,5 @@ def newcompleteTransitions(transitions):
                 occlusionsFromZero = 0
                 zero_state = not zero_state
 
-    print("completeTransitions is complete.")
+    print("newCompleteTransitions is complete.")
     return complete_transitions_count, jump_transitions_count, occlusions_before_transition, occlusions_before_transition_total, occlusionsFromZeroState, occlusionsFromTwoState, complete_transitions_count_fromZero,complete_transitions_count_fromTwo
