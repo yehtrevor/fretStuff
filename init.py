@@ -44,6 +44,11 @@ for i in range(len(FRETvalues)):
     data.append(data_temp)
     for j in range(len(FRETvalues.columns)):
         data_temp.append(FRETvalues.iloc[i,j])
+titles= ['Times']
+for i in range(len(FRETvalues.columns)):
+    titles.append(FRETvalues.columns[i])
+
+data.insert(0,titles)
 print(data)
 
 headers = [
