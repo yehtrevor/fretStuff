@@ -112,7 +112,7 @@ def traceClassification(df, threshold):
 
 ### This function is used for traces that have been pre-selected using a user-specified filter in SPARTAN.
 ### This includes all FRET traces. This is just used to look at photobleaching. Resolution is in seconds.
-def FRETLifetimes(LMHvalues,window = 3, avg =True, resolution = 0.1):
+def FRETLifetimes(LMHvalues,window = 3, avg =True, resolution = 0.150):
     Lifetimes = []
     counter = 0
     for i in range(len(LMHvalues.columns)):
@@ -546,3 +546,41 @@ def newcompleteTransitions(transitions):
 
     print("newCompleteTransitions is complete.")
     return complete_transitions_count, jump_transitions_count, occlusions_before_transition, occlusions_before_transition_total, occlusionsFromZeroState, occlusionsFromTwoState, complete_transitions_count_fromZero,complete_transitions_count_fromTwo
+
+
+def write_atf_file(filename, data, headers=None):
+    """
+    Write data to an ATF file.
+
+    :param filename: Name of the file to write to.
+    :param data: List of lists or 2D array containing the data to write.
+    :param headers: List of strings containing the headers for the columns. If None, no headers are written.
+    """
+    # Ensure the data is in the correct format (list of lists)
+    if not all(isinstance(row, list) for row in data):
+        raise ValueError("Data should be a list of lists")
+
+    # Determine the number of columns
+    num_columns = len(data[0])
+
+    # Prepare the header section
+    atf_version = "ATF\t1.0"
+    header_lines = [atf_version]
+
+    if headers:
+        num_headers = len(headers)
+        header_lines.append(f"{num_headers}\t{num_columns}")
+        header_lines.extend(headers)
+    else:
+        header_lines.append(f"0\t{num_columns}")
+
+    # Prepare the data section
+    data_lines = ["\t".join(map(str, row)) for row in data]
+
+    # Combine header and data sections
+    with open(filename, 'w') as file:
+        for line in header_lines:
+            file.write(line + "\n")
+        for line in data_lines:
+            file.write(line + "\n")
+
