@@ -1,0 +1,2 @@
+	LoMid	MidHi	LoHi	HiMid	HiLo	MidLo
+0	8	9	1	9	1	8

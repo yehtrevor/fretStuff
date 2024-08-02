@@ -1,0 +1,26 @@
+Complete: [3]
+Jump: [0]
+Occ Per Complete: [[0, 0, 2]]
+Total Time: 41.35
+Jump: 0
+Jump+Occ: 2
+Total Unproductive Occ:  2
+Total Unproductive Occ from Sum:  2
+Total Productive occ:  3
+Total Productive/sec:  0.07255139056831922
+Ratio of Productive to Unproductive;  1.5
+Unproductive Occlusion from Zero State:  0
+Unproductive Occlusion from Two State:  2
+Complete: [7]
+Jump: [0]
+Occ Per Complete: [[1, 1, 1, 1, 0, 0, 0]]
+Total Time: 8.799999999999999
+Jump: 0
+Jump+Occ: 4
+Total Unproductive Occ:  4
+Total Unproductive Occ from Sum:  4
+Total Productive occ:  7
+Total Productive/sec:  0.7954545454545455
+Ratio of Productive to Unproductive;  1.75
+Unproductive Occlusion from Zero State:  2
+Unproductive Occlusion from Two State:  2

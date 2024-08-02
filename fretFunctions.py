@@ -32,14 +32,15 @@ def sortTrajectories(traceInput, window_size = 3, skip = False, resolution = 2):
 #range 6 - lo 0-0.4, mid 0.4-0.55, hi 0.55-1
     for i in range(len(FRETvalues.columns)):
         for j in range(len(FRETvalues)):
-            if 0 < FRETvalues.iloc[:, i][j] <= 0.4:
+            if 0.05 < FRETvalues.iloc[:, i][j] <= 0.4:
                 LMHvalues.iloc[:, i][j] = 0
             elif 0.4 < FRETvalues.iloc[:, i][j] <= 0.55:
                 LMHvalues.iloc[:, i][j] = 1
             elif 0.55 < FRETvalues.iloc[:, i][j] <= 1:
                 LMHvalues.iloc[:, i][j] = 2
             else:
-                LMHvalues.iloc[:, i][j] = np.nan
+                break
+                #LMHvalues.iloc[:, i][j] = np.nan
     #for i in range(len(LMHvalues.columns)):
     #    for j in range(len(LMHvalues)-1):
     #        if LMHvalues.iloc[j, i] == LMHvalues.iloc[j + 1, i]:
@@ -52,7 +53,7 @@ def sortTrajectories(traceInput, window_size = 3, skip = False, resolution = 2):
     #        else:
     #            break
 
-    AvgLMHvalues = pd.DataFrame(0,index=np.arange(dimensions[0]),columns=np.arange(dimensions[1]))
+    AvgLMHvalues = pd.DataFrame(np.nan,index=np.arange(dimensions[0]),columns=np.arange(dimensions[1]))
     AvgFRETvalues = pd.DataFrame(index=FRETvalues.index)
 
     #Boxcar average with window size of 3 to average FRET data. This is to remove events that may bounce back and forth bewtween states.
@@ -65,15 +66,17 @@ def sortTrajectories(traceInput, window_size = 3, skip = False, resolution = 2):
 
 
     for i in range(len(AvgFRETvalues.columns)):
-      for j in range(len(AvgFRETvalues)):
-          if 0 < AvgFRETvalues.iloc[:, i][j] <= 0.4:
+      for j in range(2,len(AvgFRETvalues)):
+          if 0.05 < AvgFRETvalues.iloc[:, i][j] <= 0.4:
               AvgLMHvalues.iloc[:, i][j] = 0
           elif 0.4 < AvgFRETvalues.iloc[:, i][j] <= 0.55:
               AvgLMHvalues.iloc[:, i][j] = 1
           elif 0.55 < AvgFRETvalues.iloc[:, i][j] <= 1:
               AvgLMHvalues.iloc[:, i][j] = 2
           else:
-              AvgLMHvalues.iloc[:, i][j] = np.nan
+              break
+              #AvgLMHvalues.iloc[:, i][j] = np.nan
+
     print("sortTrajectories is complete.")
     return selected_columns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues
 
