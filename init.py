@@ -10,8 +10,8 @@ import tkinter as tk
 from tkinter import filedialog
 
 
-newFileStorage = 'testing7' #name this for folder output
-outputName = 'testing7' #this is the output name for all your files
+newFileStorage = '20240822_IPP1_TR1_E13D_Avg3_newRange' #name this for folder output
+outputName = '20240822_IPP1_TR1_E13D_Avg3_newRange' #this is the output name for all your files
 
 
 
@@ -33,7 +33,7 @@ print(os.getcwd())
 #Edit me!#
 
 
-AllColumns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues = sortTrajectories(traceInput, window_size = 3, skip = False, resolution=2)
+AllColumns, FRETvalues, LMHvalues, AvgFRETvalues, AvgLMHvalues = sortTrajectories(traceInput, window_size = 5, skip = False, resolution=2)
 print(len(FRETvalues.columns))
 data = []
 count = 0
