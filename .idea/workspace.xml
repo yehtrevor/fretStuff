@@ -5,9 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e436eb66-7e73-4d9c-aeb8-652c9d079a4f" name="Changes" comment="file-explorer completed&#10;Unproductive occlusions are now calculated separately from individual states&#10;Occlusions that are calculated without separation is still in code, will need to remove it on the merge">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_7_3_2024_9_37_PM__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fretFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/fretFunctions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/init.py" beforeDir="false" afterPath="$PROJECT_DIR$/init.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sim_forOrigin.txt" beforeDir="false" afterPath="$PROJECT_DIR$/sim_forOrigin.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/FRETvalues_testing7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/FRETvalues_testing7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/LMHvalues_testing7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/LMHvalues_testing7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/TransitionProbGivenAState_testing7" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/TransitionProbGivenAState_testing7" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/UnprodOccBeforeTransition_testing7" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/UnprodOccBeforeTransition_testing7" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/hi_testing7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/hi_testing7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/lo_testing7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/lo_testing7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/mid_testing7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/mid_testing7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/test.atf" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/test.atf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/testing7_LMH_Histograms.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/testing7_LMH_Histograms.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/testing7_transitionsStats.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/testing7_transitionsStats.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing7/transitions_testing7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/testing7/transitions_testing7.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,12 +48,12 @@
     &quot;assignee&quot;: &quot;yehtrevor&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/yehtrevor/fretStuff.git&quot;,
-    &quot;accountId&quot;: &quot;088f1b0e-c54c-4803-899a-6a62f8d03a81&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/yehtrevor/fretStuff.git",
+    "accountId": "67446fde-5842-453b-bb87-ee25dded70b4"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -47,15 +62,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.fretFunctions.executor&quot;: &quot;Run&quot;,
-    &quot;Python.init.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;file-explorer&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/trevo/PycharmProjects/fretStuff&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.fretFunctions.executor": "Run",
+    "Python.init.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/tyeh/Desktop/fretStuffAug"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\trevo\PycharmProjects\fretStuff\Data" />
@@ -71,7 +86,6 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.12 (fretStuff)" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
